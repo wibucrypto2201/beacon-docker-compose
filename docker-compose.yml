@@ -1,0 +1,44 @@
+x-generic-service: &service
+  image: blockcast/cdn_gateway_go:${IMAGE_VERSION:-latest}
+  restart: always
+  network_mode: host
+  labels:
+    - "com.centurylinklabs.watchtower.enable=true"
+
+
+services:
+  control_proxy:
+    <<: *service
+    container_name: control_proxy
+    volumes:
+      - ${HOME}/.blockcast/certs:/var/opt/magma/certs
+      - ${HOME}/.blockcast/snowflake:/etc/snowflake
+    command: >
+      /bin/bash -c "/var/opt/magma/bin/generate_nghttpx_config &&
+      /usr/bin/env nghttpx --conf /var/opt/magma/tmp/nghttpx.conf"
+
+  blockcastd:
+    <<: *service
+    container_name: blockcastd
+    volumes:
+      - ${HOME}/.blockcast/certs:/var/opt/magma/certs
+      - ${HOME}/.blockcast/snowflake:/etc/snowflake
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      MAGMA_CONFIG_LOCATION: /etc/magma
+    command: /usr/bin/blockcastd -logtostderr=true -v=0
+  beacond:
+    <<: *service
+    container_name: beacond
+    volumes:
+      - ${HOME}/.blockcast/certs:/var/opt/magma/certs
+      - ${HOME}/.blockcast/snowflake:/etc/snowflake
+    command: envdir /var/opt/magma/envdir /var/opt/magma/bin/beacond -logtostderr=true -v=0
+  watchtower:
+    container_name: cdn_watchtower
+    image: containrrr/watchtower
+    environment:
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_POLL_INTERVAL: 21600
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
