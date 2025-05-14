@@ -1,7 +1,7 @@
 x-service: &service
   image: blockcast/cdn_gateway_go:${IMAGE_VERSION:-stable}
   restart: always
-  network_mode: host
+  network_mode: "service:blockcastd"
   volumes:
     - ${HOME}/.blockcast/certs:/var/opt/magma/certs
     - ${HOME}/.blockcast/snowflake:/etc/snowflake
@@ -22,6 +22,7 @@ services:
       - ${HOME}/.blockcast/snowflake:/etc/snowflake
       - /var/run/docker.sock:/var/run/docker.sock
     command: /usr/bin/blockcastd -logtostderr=true -v=0
+    network_mode: bridge
 
   beacond:
     <<: *service
