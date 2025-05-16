@@ -5,6 +5,7 @@ x-service: &service
   volumes:
     - ${HOME}/.blockcast/certs:/var/opt/magma/certs
     - ${HOME}/.blockcast/snowflake:/etc/snowflake
+    - /var/run/docker.sock:/var/run/docker.sock    
   labels:
     - "com.centurylinklabs.watchtower.enable=true"
 
@@ -17,17 +18,13 @@ services:
   blockcastd:
     <<: *service
     container_name: blockcastd
-    volumes:
-      - ${HOME}/.blockcast/certs:/var/opt/magma/certs
-      - ${HOME}/.blockcast/snowflake:/etc/snowflake
-      - /var/run/docker.sock:/var/run/docker.sock
     command: /usr/bin/blockcastd -logtostderr=true -v=0
     network_mode: bridge
 
   beacond:
     <<: *service
     container_name: beacond
-    command: envdir /var/opt/magma/envdir /var/opt/magma/bin/beacond -logtostderr=true -v=0
+    command: /usr/bin/beacond -logtostderr=true -v=0
 
   watchtower:
     image: containrrr/watchtower
