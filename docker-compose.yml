@@ -14,7 +14,7 @@ services:
     container_name: control_proxy_${INSTANCE_ID:-0}
     command: /usr/bin/control_proxy
     ports:
-      - "${HOST_PORT:-8080}:8080"
+      - "${HOST_PORT:-8080}:8080"   # map port host random
     environment:
       - HTTP_PROXY=http://${PROXY_AUTH:-dummy}
       - HTTPS_PROXY=http://${PROXY_AUTH:-dummy}
