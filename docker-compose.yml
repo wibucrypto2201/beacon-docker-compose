@@ -33,6 +33,7 @@ services:
 
   watchtower:
     image: containrrr/watchtower
+    container_name: watchtower_${INSTANCE_ID}
     environment:
       WATCHTOWER_LABEL_ENABLE: "true"
     volumes:
