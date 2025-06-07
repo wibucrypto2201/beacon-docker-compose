@@ -1,29 +1,36 @@
+version: "3.8"
+
 x-service: &service
   image: blockcast/cdn_gateway_go:${IMAGE_VERSION:-stable}
   restart: always
-  network_mode: "service:blockcastd"
   volumes:
     - ${HOME}/.blockcast/certs:/var/opt/magma/certs
     - ${HOME}/.blockcast/snowflake:/etc/snowflake
-    - /var/run/docker.sock:/var/run/docker.sock    
+    - /var/run/docker.sock:/var/run/docker.sock
   labels:
     - "com.centurylinklabs.watchtower.enable=true"
 
 services:
   control_proxy:
     <<: *service
-    container_name: control_proxy
+    container_name: control_proxy_${INSTANCE_ID}
     command: /usr/bin/control_proxy
+    network_mode: bridge
+    ports:
+      - "${PROXY_PORT}:8080"
+    environment:
+      - HTTP_PROXY=http://${PROXY_AUTH}
+      - HTTPS_PROXY=http://${PROXY_AUTH}
 
   blockcastd:
     <<: *service
-    container_name: blockcastd
+    container_name: blockcastd_${INSTANCE_ID}
     command: /usr/bin/blockcastd -logtostderr=true -v=0
     network_mode: bridge
 
   beacond:
     <<: *service
-    container_name: beacond
+    container_name: beacond_${INSTANCE_ID}
     command: /usr/bin/beacond -logtostderr=true -v=0
 
   watchtower:
